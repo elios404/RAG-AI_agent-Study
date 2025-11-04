@@ -1,0 +1,62 @@
+SELECT
+  ?item ?itemLabel ?enLabel ?pubYear ?imdbID ?tmdbID
+  (GROUP_CONCAT(DISTINCT ?genreLabel; SEPARATOR=", ") AS ?genres)
+  (GROUP_CONCAT(DISTINCT ?castLabel; SEPARATOR=", ") AS ?cast)
+  (GROUP_CONCAT(DISTINCT ?directorLabel; SEPARATOR=", ") AS ?directors)
+  (GROUP_CONCAT(DISTINCT ?writerLabel; SEPARATOR=", ") AS ?screenwriters)
+  (GROUP_CONCAT(DISTINCT ?duration; SEPARATOR=", ") AS ?runtimes) # Units are mixed, TMDB is better
+WHERE {
+  # 1. Filter by Country and Mandatory IDs
+  ?item wdt:P495 wd:Q884. # Country: South Korea
+  ?item wdt:P345 ?imdbID. # MUST have IMDb ID
+
+  # 2. Handle Film/TV and their respective TMDB IDs
+  {
+    ?item wdt:P31 wd:Q11424. # It's a Film
+    ?item wdt:P4947 ?tmdbID. # AND MUST have TMDB Film ID
+  }
+  UNION
+  {
+    ?item wdt:P31 wd:Q5398426. # It's a TV Series
+    ?item wdt:P4983 ?tmdbID. # AND MUST have TMDB TV ID
+  }
+
+  # 3. Filter by Date
+  ?item wdt:P577 ?pubDate.
+  BIND(YEAR(?pubDate) AS ?pubYear)
+  FILTER(?pubYear >= 2015 && ?pubYear <= 2025)
+
+  # 4. Get Labels (Korean required, English optional)
+  ?item rdfs:label ?itemLabel.
+  FILTER(LANG(?itemLabel) = "ko")
+  OPTIONAL {
+    ?item rdfs:label ?enLabel.
+    FILTER(LANG(?enLabel) = "en") 
+  }
+
+  # 5. Get "as much as possible" (Optional Data)
+  # Use Korean labels for entities if available
+  OPTIONAL {
+    ?item wdt:P136 ?genre_item.
+    ?genre_item rdfs:label ?genreLabel. FILTER(LANG(?genreLabel) = "ko")
+  }
+  OPTIONAL {
+    ?item wdt:P161 ?cast_item.
+    ?cast_item rdfs:label ?castLabel. FILTER(LANG(?castLabel) = "ko")
+  }
+  OPTIONAL {
+    ?item wdt:P57 ?director_item.
+    ?director_item rdfs:label ?directorLabel. FILTER(LANG(?directorLabel) = "ko")
+  }
+  OPTIONAL {
+    ?item wdt:P58 ?writer_item.
+    ?writer_item rdfs:label ?writerLabel. FILTER(LANG(?writerLabel) = "ko")
+  }
+  OPTIONAL {
+    ?item wdt:P2047 ?duration_node.
+    BIND(STR(?duration_node) AS ?duration) # Get duration as string
+  }
+}
+GROUP BY ?item ?itemLabel ?enLabel ?pubYear ?imdbID ?tmdbID
+ORDER BY DESC(?pubYear)
+LIMIT 2000
