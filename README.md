@@ -5,6 +5,8 @@
 2. source .venv/bin/activate
 3. uv pip install -r requirements.txt
 
+.env 파일에 OPENAI_API_KEY 를 넣을 수 있도록
+
 ### 추가 라이브러리 설치 이후
 uv pip freeze > requirements.txt
 
