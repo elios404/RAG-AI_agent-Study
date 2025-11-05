@@ -11,14 +11,13 @@ uv pip freeze > requirements.txt
 ## chromaDB
 chromaDB2 는 장르 원핫인코딩도 포함된 버전
 
+## 실행 방법
+```
+python main_graph.py
+```
 
+```
+streamlit run app.py
+```
 
-
-response_object_ott = [<AllowedOTTs.NETFLIX: 'Netflix'>, ...] 이런 형식에서
-
-for ott_enum in response_object_ott:
-        # 1. .value 속성을 사용하여 순수한 문자열 'Netflix'를 추출
-        ott_value = ott_enum.value
-
-이런식으로 사용가능
 
